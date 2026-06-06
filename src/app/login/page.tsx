@@ -16,65 +16,73 @@ export default function LoginPage() {
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('')
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  e.preventDefault()
 
-    setLoading(true)
-    setMessage('')
-    setMessageType('')
+  setLoading(true)
+  setMessage('')
+  setMessageType('')
 
-    const cleanEmail = email.trim().toLowerCase()
+  const cleanEmail = email.trim().toLowerCase()
 
-    if (!cleanEmail || !password) {
-      setMessage('Email dan password wajib diisi.')
-      setMessageType('error')
-      setLoading(false)
-      return
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: cleanEmail,
-      password,
-    })
-
-    if (error) {
-      setMessage('Login gagal. Periksa email dan password kamu.')
-      setMessageType('error')
-      setLoading(false)
-      return
-    }
-
-    if (!data.user) {
-      setMessage('Login gagal. User tidak ditemukan.')
-      setMessageType('error')
-      setLoading(false)
-      return
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, username, email, role')
-      .eq('id', data.user.id)
-      .single()
-
-    if (profileError || !profile) {
-      setMessage('Akun berhasil login, tetapi profil tidak ditemukan di database.')
-      setMessageType('error')
-      setLoading(false)
-      return
-    }
-
-    setMessage('Login berhasil. Mengalihkan halaman...')
-    setMessageType('success')
-
-    if (profile.role === 'admin') {
-      router.push('/admin/projects')
-    } else {
-      router.push('/dashboard')
-    }
-
-    router.refresh()
+  if (!cleanEmail || !password) {
+    setMessage('Email dan password wajib diisi.')
+    setMessageType('error')
     setLoading(false)
+    return
   }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: cleanEmail,
+    password,
+  })
+
+  if (error) {
+    setMessage('Login gagal. Periksa email dan password kamu.')
+    setMessageType('error')
+    setLoading(false)
+    return
+  }
+
+  if (!data.user) {
+    setMessage('Login gagal. User tidak ditemukan.')
+    setMessageType('error')
+    setLoading(false)
+    return
+  }
+
+  const userId = data.user.id
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
+
+  console.log('USER ID:', userId)
+  console.log('PROFILE:', profile)
+  console.log('PROFILE ERROR:', profileError)
+
+  if (profileError || !profile) {
+    setMessage(
+      `Profil tidak ditemukan: ${profileError?.message || 'Tidak ada data'}`
+    )
+    setMessageType('error')
+    setLoading(false)
+    return
+  }
+
+  setMessage('Login berhasil. Mengalihkan halaman...')
+  setMessageType('success')
+
+  if (profile.role === 'admin') {
+    router.push('/admin/projects')
+  } else {
+    router.push('/dashboard')
+  }
+
+  router.refresh()
+  setLoading(false)
+}
 
   return (
     <main className="min-h-screen bg-gray-50">

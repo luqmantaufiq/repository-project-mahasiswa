@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { supabase } from './lib/supabaseClient'
+import AuthButton from './components/AuthButton'
 
 function formatJenisProject(jenis: string) {
   const label: Record<string, string> = {
@@ -86,12 +87,7 @@ export default async function Home() {
             </div>
 
             <div className="flex gap-3">
-              <Link
-                href="/login"
-                className="rounded-xl border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              >
-                Login
-              </Link>
+              <AuthButton />
               </div>
               </div>
               </div>
